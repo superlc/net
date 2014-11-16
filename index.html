@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>canvas动画</title>
+		<style type="text/css">
+		*{margin: 0;padding: 0;}
+		body{overflow: hidden;}
+		</style>
+	</head>
+	<body>
+		<canvas id="target"></canvas>
+		<script type="text/javascript" src="net.js"></script>
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded',function(e){
+				var s_width = window.innerWidth;
+				var s_height = window.innerHeight;
+
+				var canvas = document.getElementById('target');
+				canvas.setAttribute('width',s_width);
+				canvas.setAttribute('height',s_height);
+
+				var ctx = canvas.getContext('2d');
+				//一组以一个顶点发出的射线
+				var group = [
+					{
+						points : [
+						{
+							x : 100,
+							y : s_height
+						},
+						{
+							x : 400,
+							y : s_height
+						},
+						{
+							x : 800,
+							y : s_height
+						}],
+						t_points : [
+							{
+								x : 200,
+								y : 500
+							},
+							{
+								x : 500,
+								y : 500
+							},
+							{
+								x : 600,
+								y : 300
+							}
+						],
+						status : {
+							//保存该组当前端点和下一个端点的索引
+							index : 0,
+							n_index : 0
+						}
+					},
+					{
+						points : [
+						{
+							x : 150,
+							y : s_height
+						},
+						{
+							x : 450,
+							y : s_height
+						},
+						{
+							x : 850,
+							y : s_height
+						}],
+						t_points : [
+							{
+								x : 250,
+								y : 500
+							},
+							{
+								x : 550,
+								y : 500
+							},
+							{
+								x : 650,
+								y : 300
+							}
+						],
+						status : {
+							//保存该组当前端点和下一个端点的索引
+							index : 0,
+							n_index : 0
+						}
+					}
+				];
+				var net = new Net({
+					context : ctx,
+					group : group,
+					rect : {
+						x : 0,
+						y : 0,
+						width : s_width,
+						height : s_height
+					}
+				});
+				net.move();
+			});
+		</script>
+	</body>
+</html>

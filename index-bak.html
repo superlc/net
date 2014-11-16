@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>canvas动画</title>
+		<style type="text/css">
+		*{margin: 0;padding: 0;}
+		body{overflow: hidden;}
+		</style>
+	</head>
+	<body>
+		<canvas id="target"></canvas>
+		<script type="text/javascript" src="net.js"></script>
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded',function(e){
+				var s_width = window.innerWidth;
+				var s_height = window.innerHeight;
+
+				var canvas = document.getElementById('target');
+				canvas.setAttribute('width',s_width);
+				canvas.setAttribute('height',s_height);
+
+				var ctx = canvas.getContext('2d');
+				//一组以一个顶点发出的射线
+				var group = [
+					{
+						points : [
+						{
+							x : 100,
+							y : 100
+						},
+						{
+							x : 400,
+							y : 100
+						},
+						{
+							x : 800,
+							y : 100
+						}],
+						t_points : [
+							{
+								x : 200,
+								y : 500
+							},
+							{
+								x : 500,
+								y : 500
+							},
+							{
+								x : 600,
+								y : 300
+							}
+						],
+						status : {
+							//保存该组当前端点和下一个端点的索引
+							index : 0,
+							n_index : 0
+						}
+					},
+					{
+						points : [
+						{
+							x : 150,
+							y : 100
+						},
+						{
+							x : 450,
+							y : 100
+						},
+						{
+							x : 850,
+							y : 100
+						}],
+						t_points : [
+							{
+								x : 250,
+								y : 500
+							},
+							{
+								x : 550,
+								y : 500
+							},
+							{
+								x : 650,
+								y : 300
+							}
+						],
+						status : {
+							//保存该组当前端点和下一个端点的索引
+							index : 0,
+							n_index : 0
+						}
+					}
+				];
+				//将group组中所有的这种点集进行绘画
+				function draw(t_points){
+					ctx.clearRect(0,0,s_width,s_height);
+					//获取每一个组的内容
+					for(var i = 0;i < t_points.length;i++){
+						for(var j=0;j<group[i].points.length;j++){
+							ctx.beginPath();
+							ctx.moveTo(t_points[i].x,t_points[i].y);
+							ctx.lineTo(group[i].points[j].x,group[i].points[j].y);
+							ctx.stroke();
+							ctx.closePath();
+						}
+						//绘制端点
+						ctx.beginPath();
+						ctx.arc(t_points[i].x,t_points[i].y,5,0,Math.PI*2,true);
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+				function animate(duration,callBack,easing){
+				      var startTime = +new Date(),//记录当前时间，+new Date()为new Date().getTime()的简写
+				      endTime       = startTime+duration,//结束时间
+				      curTime, //当前时间
+				      t,       //当前时间，在总时间的比例，范围0.0~1.0
+				      e,       //动画算子
+				      timer,   //setTimeout，的定时器
+				      //一个单位动画执行的函数
+				      run = function(){
+				        curTime = +new Date();
+				        //计算，当前时间，在总时间的比例，范围0.0~1.0
+				        t = curTime > endTime ? 1 : (curTime - startTime)/duration;
+				        //动画算子
+				        e = easing?easing(t):t;
+				        //计算时间t时的点坐标
+				        var tmp_tpoints = [];
+				        for(var i=0;i<group.length;i++){
+				        	var p = {
+				        		x : ((group[i].t_points[group[i].status.n_index]).x - (group[i].t_points[group[i].status.index]).x)*e + (group[i].t_points[group[i].status.index]).x,
+				        		y : ((group[i].t_points[group[i].status.n_index]).y - (group[i].t_points[group[i].status.index]).y)*e + (group[i].t_points[group[i].status.index]).y
+				        	};
+				        	tmp_tpoints.push(p);
+				        }
+				        //绘制图集
+				        draw(tmp_tpoints);
+
+				        if(t < 1){
+				          //t < 1.0表面动画未结束 ,每16毫秒递归一次run函数。
+				          timer = setTimeout(function(){run()},16);
+				        }else{
+				          //如果回调函数存在，执行回调函数
+				          callBack&&callBack();
+				        }
+				      };
+				      run();
+				      return function(){
+				        timer&&clearTimeout(timer);
+				      };
+				 };
+				 //初始画布
+				draw([
+					{
+						x : group[0].t_points[0].x,
+						y : group[0].t_points[0].y
+					},
+					{
+						x : group[1].t_points[0].x,
+						y : group[1].t_points[0].y
+					}
+				]);
+				var timer = setInterval(function(){
+					//对于每一个group随机下一个端点的位置
+					for(var i=0;i<group.length;i++){
+						//group[i].t_points[location[i].n_index].x,group[i].t_points[location[i].n_index].y
+						var tmp = Math.ceil(Math.random()*(group[i].t_points.length -1)+1);
+						group[i].status.n_index = tmp-1;
+					}
+
+					//重绘调整后的射线
+					animate(2000,null,Easing.easeOutQuart);
+					var r_timer = setTimeout(function(){
+						for(var j=0;j<group.length;j++){
+							group[j].status.index = group[j].status.n_index;
+						}
+						clearTimeout(r_timer);
+					},2000);
+				},3000);
+			});
+		</script>
+	</body>
+</html>
